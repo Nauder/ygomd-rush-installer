@@ -23,24 +23,28 @@ python asset_replacer.py
 ```
 
 2. Click "Browse" to select your `data.unity3d` file
-3. Click "Replace Assets" to process the file
-4. Choose whether to replace the original file (with backup) or save as a new file
+3. Place your replacement images in the appropriate folders:
+   - Card frame images in `res/frame/` (using the predefined mapping)
+   - Other asset replacements in `res/mask/` (matching the asset name)
+4. Click "Replace Assets" to process the file
+5. Choose whether to replace the original file (with automatic timestamped backup) or save as a new file
 
 ## How it works
 
 The application:
 - Loads the Unity AssetBundle file using UnityPy
-- Filters assets that match the criteria:
-  - Has `m_Name` and `m_CompleteImageSize` attributes
-  - Contains "card_frame" in the name
-- Replaces matching assets with corresponding images from the `res` folder
+- Searches for two types of assets to replace:
+  - **Card Frame Assets**: Assets containing "card_frame" in the name
+  - **Mask Assets**: Any assets matching filenames in the `res/mask` folder
+- Replaces matching assets with corresponding images from the `res` folder structure
 - Asks for user confirmation to either:
   - Replace the original file (after creating a timestamped backup)
   - Save as a separate modified file
 
-## Supported Card Frames
+## Asset Replacement Types
 
-The application replaces the following card frame assets:
+### Card Frame Assets
+The application replaces the following card frame assets from `res/frame/`:
 - card_frame00 → normal.png
 - card_frame01 → effect.png
 - card_frame02 → ritual.png
@@ -56,7 +60,10 @@ The application replaces the following card frame assets:
 - card_frame16 → pends.png
 - card_frame17 → pendf.png
 - card_frame18 → link.png
-- card_frame19 → pendf.png
+- card_frame19 → pendr.png
+
+### Mask Assets
+The application also supports replacing any asset with a corresponding image file in `res/mask/`. Simply place your replacement images in the `res/mask/` folder with the same filename (without extension) as the asset you want to replace. Supported image formats include PNG, JPG, JPEG, BMP, and TGA.
 
 ## License
 This project is licensed under the terms specified in the LICENSE file
@@ -64,3 +71,5 @@ This project is licensed under the terms specified in the LICENSE file
 ## Credits
 
 - [Phanthelia](https://www.deviantart.com/phanthelia) for the original Rush Duel card frame template used in this mod
+- [human123091](https://next.nexusmods.com/profile/human123091) for the mask effects
+- [Artineo2](https://forums.nexusmods.com/profile/37121345-artineo2/) for the Pendulum/Ritual card frame

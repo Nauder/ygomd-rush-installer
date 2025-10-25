@@ -35,7 +35,7 @@ class AssetReplacerGUI:
             "card_frame16": "pends.png",
             "card_frame17": "pendf.png",
             "card_frame18": "link.png",
-            "card_frame19": "pendf.png",
+            "card_frame19": "pendr.png",
         }
 
         self.setup_ui()
@@ -114,6 +114,20 @@ class AssetReplacerGUI:
         except Exception as e:
             raise Exception(f"Failed to create backup: {str(e)}")
 
+    def get_mask_files(self):
+        """Get all image files from res/mask folder and create a mapping"""
+        mask_folder = os.path.join("res", "mask")
+        mask_files = {}
+
+        if os.path.exists(mask_folder):
+            for filename in os.listdir(mask_folder):
+                if filename.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".tga")):
+                    # Use filename without extension as asset name
+                    asset_name = os.path.splitext(filename)[0]
+                    mask_files[asset_name] = os.path.join(mask_folder, filename)
+
+        return mask_files
+
     def process_assets(self):
         if not self.bundle_path.get():
             messagebox.showerror(
@@ -132,31 +146,46 @@ class AssetReplacerGUI:
             self.log("Loading Unity AssetBundle...")
             env = UnityPy.load(self.bundle_path.get())
 
+            # Get mask files mapping
+            mask_files = self.get_mask_files()
+            if mask_files:
+                self.log(
+                    f"Found {len(mask_files)} mask files: {', '.join(mask_files.keys())}"
+                )
+            else:
+                self.log("No mask files found in res/mask folder")
+
             replaced_count = 0
 
             for obj in env.objects:
                 if obj.type.name == "Texture2D":
                     data = obj.read()
 
-                    # Apply filter
-                    if (
-                        hasattr(data, "m_Name")
-                        and hasattr(data, "m_CompleteImageSize")
-                        and "card_frame" in data.m_Name
-                    ):
+                    if hasattr(data, "m_Name") and hasattr(data, "m_CompleteImageSize"):
+                        asset_name = data.m_Name
+                        replacement_path = None
+                        replacement_source = None
 
-                        self.log(f"Found matching asset: {data.m_Name}")
+                        # Check for card frame replacements
+                        if "card_frame" in asset_name and asset_name in self.face_names:
+                            replacement_file = self.face_names[asset_name]
+                            replacement_path = os.path.join(
+                                "res", "frame", replacement_file
+                            )
+                            replacement_source = "frame"
 
-                        # Check if we have a replacement for this asset
-                        if data.m_Name in self.face_names:
-                            replacement_file = self.face_names[data.m_Name]
-                            replacement_path = os.path.join("res", replacement_file)
+                        # Check for mask replacements
+                        elif asset_name in mask_files:
+                            replacement_path = mask_files[asset_name]
+                            replacement_source = "mask"
 
-                            if os.path.exists(replacement_path):
-                                self.log(
-                                    f"Replacing {data.m_Name} with {replacement_file}"
-                                )
+                        if replacement_path and os.path.exists(replacement_path):
+                            self.log(f"Found matching asset: {asset_name}")
+                            self.log(
+                                f"Replacing {asset_name} with {os.path.basename(replacement_path)} ({replacement_source})"
+                            )
 
+                            try:
                                 # Load replacement image
                                 with open(replacement_path, "rb") as f:
                                     replacement_data = f.read()
@@ -171,13 +200,14 @@ class AssetReplacerGUI:
                                 data.save()
                                 replaced_count += 1
 
-                                self.log(f"Successfully replaced {data.m_Name}")
-                            else:
-                                self.log(
-                                    f"Warning: Replacement file not found: {replacement_path}"
-                                )
-                        else:
-                            self.log(f"No replacement defined for: {data.m_Name}")
+                                self.log(f"Successfully replaced {asset_name}")
+                            except Exception as e:
+                                self.log(f"Error replacing {asset_name}: {str(e)}")
+
+                        elif replacement_path:
+                            self.log(
+                                f"Warning: Replacement file not found: {replacement_path}"
+                            )
 
             if replaced_count == 0:
                 self.log("No assets were replaced.")
