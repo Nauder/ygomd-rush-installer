@@ -22,7 +22,8 @@ pip install -r requirements.txt
 python asset_replacer.py
 ```
 
-2. Click "Browse" to select your `data.unity3d` file
+2. Click "Browse" to select the game's bundles directory, usually something like `C:/Program Files (x86)/Steam/steamapps/common/Yu-Gi-Oh!  Master Duel/LocalData/$YOUR_ACCOUNT_ID`
+   - The bundle file is resolved automatically at `<selected folder>/0000/0e/0e5c5d56`
 3. Place your replacement images in the appropriate folders:
    - Card frame images in `res/frame/` (using the predefined mapping)
    - Other asset replacements in `res/mask/` (matching the asset name)

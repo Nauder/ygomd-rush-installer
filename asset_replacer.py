@@ -13,7 +13,7 @@ class AssetReplacerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Unity Asset Replacer")
-        self.root.geometry("600x400")
+        self.root.geometry("750x400")
 
         # Asset bundle file path
         self.bundle_path = tk.StringVar()
@@ -47,7 +47,7 @@ class AssetReplacerGUI:
 
         # Folder selection frame
         file_frame = ttk.LabelFrame(
-            main_frame, text="Select Bundles Path", padding="10"
+            main_frame, text="Bundles Path (Usually C:/Program Files (x86)/Steam/steamapps/common/Yu-Gi-Oh!  Master Duel/LocalData/$YOUR_ACCOUNT_ID)", padding="10"
         )
         file_frame.grid(
             row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10)
