@@ -13,7 +13,7 @@ class AssetReplacerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Unity Asset Replacer")
-        self.root.geometry("750x400")
+        self.root.geometry("600x400")
 
         # Asset bundle file path
         self.bundle_path = tk.StringVar()
@@ -45,19 +45,19 @@ class AssetReplacerGUI:
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
-        # Folder selection frame
+        # File selection frame
         file_frame = ttk.LabelFrame(
-            main_frame, text="Bundles Path (Usually C:/Program Files (x86)/Steam/steamapps/common/Yu-Gi-Oh!  Master Duel/LocalData/$YOUR_ACCOUNT_ID)", padding="10"
+            main_frame, text="Select Unity AssetBundle File", padding="10"
         )
         file_frame.grid(
             row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10)
         )
 
-        # Folder path entry
+        # File path entry
         ttk.Entry(file_frame, textvariable=self.bundle_path, width=60).grid(
             row=0, column=0, padx=(0, 10)
         )
-        ttk.Button(file_frame, text="Browse", command=self.browse_folder).grid(
+        ttk.Button(file_frame, text="Browse", command=self.browse_file).grid(
             row=0, column=1
         )
 
@@ -89,10 +89,13 @@ class AssetReplacerGUI:
         log_frame.columnconfigure(0, weight=1)
         log_frame.rowconfigure(0, weight=1)
 
-    def browse_folder(self):
-        folder = filedialog.askdirectory(title="Select Bundles Path")
-        if folder:
-            self.bundle_path.set(folder)
+    def browse_file(self):
+        filename = filedialog.askopenfilename(
+            title="Select unity3d File",
+            filetypes=[("Unity3D files", "*.unity3d"), ("All files", "*.*")],
+        )
+        if filename:
+            self.bundle_path.set(filename)
 
     def log(self, message):
         self.log_text.insert(tk.END, message + "\n")
@@ -102,7 +105,7 @@ class AssetReplacerGUI:
     def create_backup(self, original_path):
         """Create a backup of the original file with timestamp"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = original_path + f"_backup_{timestamp}"
+        backup_path = original_path.replace(".unity3d", f"_backup_{timestamp}.unity3d")
 
         try:
             shutil.copy2(original_path, backup_path)
@@ -127,24 +130,21 @@ class AssetReplacerGUI:
 
     def process_assets(self):
         if not self.bundle_path.get():
-            messagebox.showerror("Error", "Please select a bundles path first.")
+            messagebox.showerror(
+                "Error", "Please select a Unity AssetBundle file first."
+            )
             return
 
-        bundle_file = os.path.join(self.bundle_path.get(), "0000", "0e", "0e5c5d56")
-
-        if not os.path.exists(bundle_file):
-            messagebox.showerror(
-                "Error",
-                f"Bundle file not found:\n{bundle_file}\n\nMake sure the selected folder contains 0000/0e/0e5c5d56.",
-            )
+        if not os.path.exists(self.bundle_path.get()):
+            messagebox.showerror("Error", "Selected file does not exist.")
             return
 
         # Clear log
         self.log_text.delete(1.0, tk.END)
 
         try:
-            self.log(f"Loading bundle: {bundle_file}")
-            env = UnityPy.load(bundle_file)
+            self.log("Loading Unity AssetBundle...")
+            env = UnityPy.load(self.bundle_path.get())
 
             # Get mask files mapping
             mask_files = self.get_mask_files()
@@ -230,16 +230,18 @@ class AssetReplacerGUI:
             if replace_original:
                 # Create backup first
                 self.log("\nCreating backup of original file...")
-                backup_path = self.create_backup(bundle_file)
+                backup_path = self.create_backup(self.bundle_path.get())
 
                 # Save modified data to original file
                 self.log("Replacing original file with modified version...")
-                with open(bundle_file, "wb") as f:
+                with open(self.bundle_path.get(), "wb") as f:
                     f.write(env.file.save())
 
                 self.log("Process completed!")
                 self.log(f"Replaced {replaced_count} assets")
-                self.log(f"Original file updated: {bundle_file}")
+                self.log(
+                    f"Original file updated: {os.path.basename(self.bundle_path.get())}"
+                )
                 self.log(f"Backup saved as: {os.path.basename(backup_path)}")
 
                 messagebox.showinfo(
@@ -250,8 +252,10 @@ class AssetReplacerGUI:
                     f"• Backup created: {os.path.basename(backup_path)}",
                 )
             else:
-                # Save as separate file next to the original
-                output_path = bundle_file + "_modified"
+                # Save as separate file (original behavior)
+                output_path = self.bundle_path.get().replace(
+                    ".unity3d", "_modified.unity3d"
+                )
                 with open(output_path, "wb") as f:
                     f.write(env.file.save())
 
