@@ -126,6 +126,7 @@ class AssetReplacerGUI:
                     asset_name = os.path.splitext(filename)[0]
                     mask_files[asset_name] = os.path.join(mask_folder, filename)
 
+        print(mask_files)
         return mask_files
 
     def process_assets(self):

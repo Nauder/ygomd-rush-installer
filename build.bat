@@ -8,7 +8,7 @@ pip install -r requirements.txt
 
 echo.
 echo Building executable...
-pyinstaller --onefile --windowed --add-data ".venv\Lib\site-packages\UnityPy;UnityPy/" --name "MD Frame Replacer" --icon "./assets/icon.ico" --add-data "./assets;assets" asset_replacer.py
+pyinstaller --onefile --windowed --add-data ".venv\Lib\site-packages\UnityPy;UnityPy/" --name "MD Frame Replacer" --icon "./assets/icon.ico" --add-data "assets;assets/" asset_replacer.py
 
 if exist "dist\MD Frame Replacer.exe" (
     echo.
