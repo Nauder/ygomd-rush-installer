@@ -7,6 +7,7 @@ import UnityPy
 from UnityPy.enums import TextureFormat
 from PIL import Image
 import io
+from rarity_shaders import patch_shader_assets
 
 
 class AssetReplacerGUI:
@@ -209,6 +210,13 @@ class AssetReplacerGUI:
                             self.log(
                                 f"Warning: Replacement file not found: {replacement_path}"
                             )
+
+            # The title finish is clipped by shader instructions, independently
+            # of the PNG masks. Keep those bounds aligned with the Rush layout.
+            shader_patches = patch_shader_assets(env)
+            for shader_name in shader_patches:
+                self.log(f"Updated rarity shader/material: {shader_name}")
+            replaced_count += len(shader_patches)
 
             if replaced_count == 0:
                 self.log("No assets were replaced.")

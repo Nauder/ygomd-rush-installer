@@ -4,7 +4,8 @@ A simple Tkinter GUI application that replaces card frame assets in Yu-Gi-Oh! Ma
 
 ## Requirements
 
-- Python 3.7+
+- Windows (uses D3DCompiler 47 to validate patched shaders)
+- Python 3.8+
 - UnityPy
 - Pillow (PIL)
 
@@ -38,6 +39,7 @@ The application:
   - **Card Frame Assets**: Assets containing "card_frame" in the name
   - **Mask Assets**: Any assets matching filenames in the `res/mask` folder
 - Replaces matching assets with corresponding images from the `res` folder structure
+- Updates rarity shader title bounds and attribute mappings to match the Rush Duel layout
 - Asks for user confirmation to either:
   - Replace the original file (after creating a timestamped backup)
   - Save as a separate modified file
